@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+uvicorn = "*"
+openai = "*"
+llama-index = "*"
+faiss-cpu = "*"
+python-multipart = "*"
+llama-cpp-python = "*"
+python-dotenv = "*"
+fastapi = {extras = ["standard"], version = "*"}
+supabase = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
+
+[scripts]
+dev = "fastapi dev api/main.py"
+llm = "python llm/llm.py"
