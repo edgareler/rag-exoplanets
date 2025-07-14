@@ -13,6 +13,8 @@ llama-cpp-python = "*"
 python-dotenv = "*"
 fastapi = {extras = ["standard"], version = "*"}
 supabase = "*"
+pydantic = "*"
+nanoid = "*"
 
 [dev-packages]
 
@@ -20,5 +22,5 @@ supabase = "*"
 python_version = "3.13"
 
 [scripts]
-dev = "fastapi dev api/main.py"
+dev = "fastapi dev src/main.py"
 llm = "python llm/llm.py"
