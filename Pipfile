@@ -26,4 +26,4 @@ python_version = "3.13"
 [scripts]
 dev = "fastapi dev src/main.py"
 llm = "python src/llm/llm.py"
-preprocess = "python src/rag/main.py"
+preprocess = "python src/rag/preprocess.py"
