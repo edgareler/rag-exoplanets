@@ -1,5 +1,3 @@
-from llm.llm import load_model, generate
-
 def build_prompt(question: str,
                  context: str,
                  summary: str,
@@ -19,7 +17,7 @@ def build_prompt(question: str,
     prompt = f"{prompt}\n\nPrior conversation summary::\n{summary}"
 
   if conversation:
-     prompt = f"{prompt}\n\n{conversation}"
+    prompt = f"{prompt}\n\n{conversation}"
 
   prompt = prompt + (
     "<|eot_id|>\n\n"
@@ -34,8 +32,9 @@ def build_history(messages:list[dict]) -> str:
   history: str = ""
 
   for m in messages:
+    message_type = "user" if m.type == "user" else "assistant"
     prompt = prompt + (
-      f"<|start_header_id|>{"user" if m.type == "user" else "assistant"}<|end_header_id|>\n"
+      f"<|start_header_id|>{message_type}<|end_header_id|>\n"
       f"{m.message}<|eot_id|>\n\n"
     )
 
