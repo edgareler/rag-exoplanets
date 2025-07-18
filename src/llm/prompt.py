@@ -3,12 +3,12 @@ def build_prompt(question: str,
                  summary: str,
                  conversation: str) -> str:
   prompt: str = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are an AI research assistant specialized in astrophysics.
-    You are given a set of scientific document excerpts as context. Answer the question based on those documents.
-    Always prioritize accuracy, citing relevant information or methods when possible.
-    Keep answers concise, clear, and focused on the question.
-    Use scientific terminology when appropriate, and structure your response in full sentences.
-  """
+You are an AI research assistant specialized in astrophysics.
+You are given a set of scientific document excerpts as context. Answer the question based on those documents.
+Always prioritize accuracy, citing relevant information or methods when possible.
+Keep answers concise, clear, and focused on the question.
+Use scientific terminology when appropriate, and structure your response in full sentences.
+"""
 
   if context:
     prompt = f"{prompt}\n\nContext:\n{context}"
