@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 uvicorn = "*"
-openai = "*"
 python-multipart = "*"
 python-dotenv = "*"
 fastapi = {extras = ["standard"], version = "*"}
