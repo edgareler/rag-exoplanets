@@ -3,8 +3,8 @@ def build_prompt(question: str,
                  summary: str,
                  conversation: str) -> str:
   prompt: str = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are an AI research assistant specialized in exoplanets and astronomy.
-    You are given a set of scientific document excerpts as context. Use only the information from this context to answer the user's question. Do not invent facts. If the answer is not clearly stated in the provided context, say "I don't know based on the current documents."
+    You are an AI research assistant specialized in astrophysics.
+    You are given a set of scientific document excerpts as context. Answer the question based on those documents.
     Always prioritize accuracy, citing relevant information or methods when possible.
     Keep answers concise, clear, and focused on the question.
     Use scientific terminology when appropriate, and structure your response in full sentences.
