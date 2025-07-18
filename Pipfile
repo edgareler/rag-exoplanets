@@ -7,16 +7,16 @@ name = "pypi"
 uvicorn = "*"
 openai = "*"
 python-multipart = "*"
-llama-cpp-python = "*"
 python-dotenv = "*"
 fastapi = {extras = ["standard"], version = "*"}
 supabase = "*"
 pydantic = "*"
 nanoid = "*"
 llama-index = "*"
-faiss-cpu = "*"
 llama-index-embeddings-huggingface = "*"
-llama-index-vector-stores-faiss = "*"
+llama-cpp-python = "*"
+chromadb = "*"
+llama-index-vector-stores-chroma = "*"
 
 [dev-packages]
 
@@ -25,5 +25,5 @@ python_version = "3.13"
 
 [scripts]
 dev = "fastapi dev src/main.py"
-llm = "python src/llm/llm.py"
-preprocess = "python src/rag/preprocess.py"
+llm = "python -m src.llm.llm"
+preprocess = "python -m src.rag.preprocess"
