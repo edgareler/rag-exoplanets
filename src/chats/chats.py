@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from pydantic import BaseModel
 from dataclasses import dataclass
 from src.database.client import get_client
@@ -11,12 +12,14 @@ class Chat:
   user_id: str
 
 async def create_chat(chat: Chat) -> str:
+  chat_date = datetime.now().isoformat()
   supabase = await get_client()
   response = await (
     supabase.table(CHATS_TABLE)
     .insert({
       "id": chat.id,
       "user_id": chat.user_id,
+      "created_at": chat_date,
     })
     .execute()
   )
