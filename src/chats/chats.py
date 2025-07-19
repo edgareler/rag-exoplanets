@@ -34,7 +34,9 @@ async def read_chat(chat: Chat):
     .eq("user_id", chat.user_id)
     .execute()
   )
-  return response
+  if len(response.data) == 0:
+    return None
+  return response.data[0]
 
 async def list_chats(user_id: str, page: int = 1, page_size: int = 10):
   range = page_to_range(page, page_size)
