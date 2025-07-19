@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from src.chats.router import router as router_chats
 from src.messages.router import router as router_messages
-from src.llm.llm import load_model, warm_up
-from src.rag.load import load_index, load_retriever
+from src.llm.llm import load_model, warm_up, unload_model
+from src.rag.load import load_index, load_retriever, unload_index
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -16,6 +16,8 @@ async def lifespan(app: FastAPI):
   load_retriever()
   yield
   print("Shutting down...")
+  unload_index()
+  unload_model()
 
 app = FastAPI(lifespan=lifespan)
 

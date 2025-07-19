@@ -1,4 +1,5 @@
 import os
+import gc
 import time
 from llama_cpp import Llama
 from dotenv import load_dotenv
@@ -43,6 +44,11 @@ def count_tokens(prompt):
   load_model()
   tokens = llm.tokenize(prompt.encode("utf-8"))
   return len(tokens)
+
+def unload_model():
+  global llm
+  del llm
+  gc.collect()
 
 if __name__ == "__main__":
   t1 = time.time_ns() // 1_000_000

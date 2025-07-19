@@ -1,3 +1,4 @@
+import gc
 import chromadb
 from pathlib import Path
 from llama_index.core import VectorStoreIndex, Settings
@@ -41,3 +42,8 @@ def load_retriever():
     retriever = index.as_retriever(similarity_top_k=4)
     print("Retriever loaded")
   return retriever
+
+def unload_index():
+  global index
+  del index
+  gc.collect()
