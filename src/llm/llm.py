@@ -26,12 +26,19 @@ def load_model():
 
 def generate(prompt, max_tokens=None):
   load_model()
-  return llm(
+  llm_response = llm(
     prompt=prompt,
     max_tokens=max_tokens,
     stop=["Q:", "\n"],
     echo=True,
   )
+  response_text = llm_response["choices"][0]["text"]
+  return extract_assistant_response(response_text)
+
+def extract_assistant_response(response_text):
+  marker = "<|start_header_id|>assistant<|end_header_id|>\n"
+  _, _, rest = response_text.partition(marker)
+  return rest.strip()
 
 def warm_up():
   global warmed_up
