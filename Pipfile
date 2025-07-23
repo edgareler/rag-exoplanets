@@ -24,5 +24,6 @@ python_version = "3.13"
 
 [scripts]
 dev = "fastapi dev src/main.py"
-llm = "python -m src.llm.llm"
+llm = "python -m src.llm.llm --query"
+llm-token = "python -m src.llm.llm --token"
 preprocess = "python -m src.rag.preprocess"

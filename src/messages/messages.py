@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 from enum import Enum
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 from nanoid import generate as nanoid
 from dataclasses import dataclass
 from src.database.client import get_client
@@ -79,7 +79,12 @@ async def create_message(message: Message):
     data=response,
   )
 
-async def list_messages(chat: Chat, page: int, page_size: int):
+async def list_messages(
+  chat: Chat,
+  page: int,
+  page_size: int,
+  descending: bool = True
+):
   range = page_to_range(page, page_size)
 
   supabase = await get_client()
@@ -88,7 +93,7 @@ async def list_messages(chat: Chat, page: int, page_size: int):
     .select("*", count="exact")
     .eq("chat_id", chat.id)
     .eq("user_id", chat.user_id)
-    .order("created_at", desc=True)
+    .order("created_at", desc=descending)
     .range(range.start, range.end)
     .execute()
   )

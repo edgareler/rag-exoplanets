@@ -52,3 +52,25 @@ async def list_chats(user_id: str, page: int = 1, page_size: int = 10):
   )
 
   return build_response(response, page, page_size)
+
+async def update_chat(
+  chat: Chat,
+  title: str,
+  recent_history: str,
+  old_history: str,
+  old_history_summary: str
+):
+  supabase = await get_client()
+  response = await (
+    supabase.table(CHATS_TABLE)
+    .update({
+      "title": title,
+      "recent_history": recent_history,
+      "old_history": old_history,
+      "old_history_summary": old_history_summary,
+    })
+    .eq("id", chat.id)
+    .eq("user_id", chat.user_id)
+    .execute()
+  )
+  return response
