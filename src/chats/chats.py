@@ -1,24 +1,18 @@
-import asyncio
 from datetime import datetime
-from pydantic import BaseModel
-from dataclasses import dataclass
+from nanoid import generate as nanoid
+from src.chats.types import Chat
 from src.database.client import get_client
 from src.database.tables import CHATS_TABLE
 from src.database.utils import page_to_range, build_response
 
-@dataclass
-class Chat:
-  id: str
-  user_id: str
-
-async def create_chat(chat: Chat) -> str:
+async def create_chat(user_id: str) -> str:
   chat_date = datetime.now().isoformat()
   supabase = await get_client()
   response = await (
     supabase.table(CHATS_TABLE)
     .insert({
-      "id": chat.id,
-      "user_id": chat.user_id,
+      "id": nanoid(),
+      "user_id": user_id,
       "created_at": chat_date,
     })
     .execute()
@@ -56,8 +50,8 @@ async def list_chats(user_id: str, page: int = 1, page_size: int = 10):
 async def update_chat(
   chat: Chat,
   title: str,
-  recent_history: str,
-  old_history: str,
+  recent_history: list[dict],
+  old_history: list[dict],
   old_history_summary: str
 ):
   supabase = await get_client()

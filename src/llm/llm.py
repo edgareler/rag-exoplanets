@@ -2,13 +2,13 @@ import os
 import gc
 import time
 import sys
-from llama_cpp import Llama
+from llama_cpp import Llama, ChatCompletionRequestMessage
 from dotenv import load_dotenv
-from src.llm.prompt import build_prompt, build_summary_prompt
+from src.llm.prompt import build_prompt, build_summary_prompt, build_chat_request
 
 load_dotenv()
 
-MAX_TOKENS = 2048
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", 512))
 
 llm = None
 warmed_up = False
@@ -19,26 +19,37 @@ def load_model():
     print("Loading LLM model...")
     llm = Llama(
       model_path = os.environ.get("MODEL_PATH"),
-      n_gpu_layers=-1,
-      n_ctx=MAX_TOKENS,
-      n_threads=6,
+      n_gpu_layers = int(os.environ.get("N_GPU_LAYERS", -1)),
+      n_ctx = MAX_TOKENS,
+      n_threads = int(os.environ.get("N_THREADS", 6)),
     )
 
     print("LLM model loaded")
   return llm
 
-def generate(prompt, max_tokens=None):
+def generate(prompt, max_tokens=MAX_TOKENS):
   load_model()
   llm_response = llm(
     prompt=prompt,
     max_tokens=max_tokens,
-    stop=["Q:", "\n"],
-    echo=True,
+    echo=False,
   )
-  response_text = llm_response["choices"][0]["text"]
-  assistant_response = extract_assistant_response(response_text)
 
-  return assistant_response
+  response_text = llm_response["choices"][0]["text"]
+
+  return response_text
+
+def complete_chat(messages: list[ChatCompletionRequestMessage], max_tokens=MAX_TOKENS):
+  load_model()
+  chat_response = llm.create_chat_completion(
+    messages=messages,
+    max_tokens=max_tokens,
+  )
+
+  response_text = chat_response["choices"][0]["message"]["content"]
+
+  return response_text
+
 
 def extract_assistant_response(response_text):
   marker = "<|start_header_id|>assistant<|end_header_id|>\n"
@@ -49,7 +60,7 @@ def warm_up():
   global warmed_up
   if warmed_up == True:
     return
-  generate("Ping")
+  generate("Ping", 128)
   warmed_up = True
 
 def count_tokens(prompt):
@@ -81,7 +92,7 @@ if __name__ == "__main__":
   print(f"Model loaded in {model_time} ms.")
   print("Warming up model")
   t3 = time.time_ns() // 1_000_000
-  generate("Ping")
+  warm_up()
   t4 = time.time_ns() // 1_000_000
   warmup_time = t4-t3
   print(f"Model warmed up in {warmup_time} ms.")
@@ -143,13 +154,13 @@ if __name__ == "__main__":
   Chauvin et al. (2010)describetheir surveyof young, nearby stars for low mass,possibly plan-
   etary companions using the ESO/VLT 8m
   """
-    prompt = build_prompt(
+    chat_request = build_chat_request(
       question="What is the easiest way to detect an exoplanet as an amateur astronomer?",
       context=context,
       summary=None,
-      conversation=None,
+      recent_messages=None,
     )
-    response = generate(prompt)
+    response = complete_chat(chat_request)
     t6 = time.time_ns() // 1_000_000
     query_time = t6-t5
     print(f"Query processed in {query_time} ms.")

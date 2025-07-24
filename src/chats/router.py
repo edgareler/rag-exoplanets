@@ -1,18 +1,12 @@
-import asyncio
-from pydantic import BaseModel
 from fastapi import APIRouter
-from pydantic import BaseModel
+from src.chats.types import ChatCreation
 from src.chats.chats import create_chat, list_chats, read_chat
-
-class ChatCreation(BaseModel):
-  id: str
-  user_id: str
 
 router = APIRouter()
 
 @router.post("/chats/")
 async def post_chat(chat: ChatCreation):
-  return await create_chat(chat)
+  return await create_chat(chat.user_id)
 
 @router.get("/chats/")
 async def get_chats(user_id: str):

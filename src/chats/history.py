@@ -1,8 +1,10 @@
 import sys
 from src.llm.llm import MAX_TOKENS, count_tokens, generate
 from src.llm.prompt import build_summary_prompt, build_title_prompt
-from src.chats.chats import read_chat, Chat, update_chat
+from src.chats.chats import read_chat, update_chat
+from src.chats.types import Chat
 from src.messages.messages import list_messages
+from src.messages.types import PreviousMessage
 
 async def build_history(chat_id: str, user_id: str):
   chat = await read_chat(Chat(
@@ -38,27 +40,30 @@ async def build_history(chat_id: str, user_id: str):
     page += 1
 
   # 2. Build chat history
-  # 2.1 Get last 8 raw messages (4 user, 4 assistant)
-  recent_messages = all_messages[-8:]
+  # 2.1 Get last 4 raw messages (2 user, 2 assistant)
+  recent_messages = all_messages[-4:]
   recent_messages_text = ""
+  recent_messages_json: list[PreviousMessage] = []
 
   for message in recent_messages:
     recent_messages_text += message["type"].capitalize() + ": " + message["message"] + "\n\n"
+    recent_messages_json.append({
+      "role": message["type"],
+      "content": message["message"],
+    })
 
   # 2.2 Get all older messages
-  old_messages = all_messages[0:-8]
+  old_messages = all_messages[0:-4]
 
   # 2.3 Summarize the older messages with the LLM
   old_messages_summary = None
-  old_messages_text = None
+  old_messages_json: list[PreviousMessage] = []
 
   if len(old_messages) > 0:
     old_messages_summary = ""
-    old_messages_text = ""
 
     base_prompt_tokens = count_tokens(build_summary_prompt(""))
 
-    # partial_messages = ""
     summary_token_count = 0
 
     for message in old_messages:
@@ -68,13 +73,14 @@ async def build_history(chat_id: str, user_id: str):
       message_content = message["type"].capitalize() + ": " + message["message"] + "\n\n"
       message_tokens = count_tokens(message_content)
 
-      old_messages_text += message_content
+      old_messages_json.append({
+        "role": message["type"],
+        "content": message["message"],
+      })
 
-      if summary_token_count + message_tokens > MAX_TOKENS:
-        old_messages_summary = (
-          generate(build_summary_prompt(old_messages_summary)) + "\n\n",
-          message_content,
-        )
+      if summary_token_count + message_tokens > (MAX_TOKENS / 2):
+        old_messages_summary = generate(build_summary_prompt(old_messages_summary)) + "\n\n"
+        old_messages_summary += message_content
         summary_token_count = count_tokens(build_summary_prompt(old_messages_summary))
       else:
         old_messages_summary += message_content
@@ -91,8 +97,8 @@ async def build_history(chat_id: str, user_id: str):
       user_id,
     ),
     title=title,
-    recent_history=recent_messages_text,
-    old_history=old_messages_text,
+    recent_history=recent_messages_json,
+    old_history=old_messages_json,
     old_history_summary=old_messages_summary,
   )
 

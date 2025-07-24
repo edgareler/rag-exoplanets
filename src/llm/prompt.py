@@ -1,14 +1,24 @@
+from llama_cpp import ChatCompletionRequestMessage
+from src.messages.types import PreviousMessage, MessageRole
+
+system_prompt = """You are an AI research assistant specialized in astrophysics.
+
+You will receive a set of scientific document excerpts as context. Answer the user’s question accurately, based only on the provided context.
+
+Guidelines:
+- Write a complete, informative, and concise answer (aim for one clear paragraph of up to ~200 words, or use bullet points only if they significantly improve clarity).
+- Summarize key data, methods, or findings when relevant.
+- Use scientific terminology when appropriate, but briefly define terms that may be unfamiliar.
+- Do not refer to diagrams, figures, or tables unless they are explicitly described in the context.
+- If the context lacks sufficient information, say so clearly—do not speculate.
+
+Respond in full sentences. Avoid repetition. Keep the response focused and helpful for a scientific audience."""
+
 def build_prompt(question: str,
                  context: str,
                  summary: str,
-                 conversation: str) -> str:
-  prompt: str = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-You are an AI research assistant specialized in astrophysics.
-You are given a set of scientific document excerpts as context. Answer the question based on those documents.
-Always prioritize accuracy, citing relevant information or methods when possible.
-Keep answers concise, clear, and focused on the question.
-Use scientific terminology when appropriate, and structure your response in full sentences.
-"""
+                 recent_messages: str) -> str:
+  prompt: str = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n{system_prompt}\n"
 
   if context:
     prompt = f"{prompt}\nContext:\n{context}\n"
@@ -16,8 +26,8 @@ Use scientific terminology when appropriate, and structure your response in full
   if summary:
     prompt = f"{prompt}\nPrior conversation summary::\n{summary}\n"
 
-  if conversation:
-    prompt = f"{prompt}\n{conversation}\n"
+  if recent_messages:
+    prompt = f"{prompt}\n{recent_messages}\n"
 
   prompt = prompt + (
     "\n<|eot_id|>\n\n"
@@ -49,7 +59,7 @@ You are a helpful assistant. Summarize the following chat messages in a concise 
 """.format(messages=messages)
   return prompt
 
-def build_title_prompt(summary: str, conversation: str) -> str:
+def build_title_prompt(summary: str, recent_messages: str) -> str:
   prompt: str = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 You are a helpful assistant. Generate a concise and descriptive title for the following chat. The title should reflect the main topic or task discussed. This title will be used for a software menu, so it must be short and use appropriated words for that context. Return only the title, with no quotes.
 <|start_header_id|>user<|end_header_id|>
@@ -57,9 +67,45 @@ You are a helpful assistant. Generate a concise and descriptive title for the fo
   if summary:
     prompt = f"{prompt}\n\nPrior conversation summary::\n{summary}"
 
-  if conversation:
-    prompt = f"{prompt}\n\n{conversation}"
+  if recent_messages:
+    prompt = f"{prompt}\n\n{recent_messages}"
 
   prompt = f"{prompt}\n\n<|start_header_id|>assistant<|end_header_id|>\n"
 
   return prompt
+
+def build_chat_request(
+  question: str,
+  base_prompt: str = system_prompt,
+  context: str = None,
+  summary: str = None,
+  recent_messages: list[PreviousMessage] = [],
+) -> list[ChatCompletionRequestMessage]:
+  messages: list[ChatCompletionRequestMessage] = [
+    {
+      "role": "system",
+      "content": base_prompt,
+    }
+  ]
+
+  if context:
+    messages.append({
+      "role": MessageRole.user,
+      "content": f"Context:\n{context}"
+    })
+
+  if summary:
+    messages.append({
+      "role": MessageRole.user,
+      "content": f"Prior conversation summary:\n{summary}"
+    })
+
+  if recent_messages:
+    messages.extend(recent_messages)
+
+  messages.append({
+    "role": MessageRole.user,
+    "content": question,
+  })
+
+  return messages

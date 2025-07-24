@@ -1,28 +1,15 @@
-import asyncio
 from datetime import datetime
-from enum import Enum
-from fastapi import HTTPException, BackgroundTasks
+from fastapi import HTTPException
 from nanoid import generate as nanoid
-from dataclasses import dataclass
+from src.messages.types import Message, MessageRole
 from src.database.client import get_client
 from src.database.tables import MESSAGES_TABLE
-from src.database.utils import page_to_range, build_response, DBResponse
-from src.chats.chats import read_chat, Chat
+from src.database.utils import page_to_range, build_response
+from src.chats.chats import read_chat
+from src.chats.types import Chat
 from src.rag.query import question
-from src.llm.llm import generate
-from src.llm.prompt import build_prompt
-
-class MessageType(str, Enum):
-  user = 'user'
-  assistant = 'assistant'
-
-@dataclass
-class Message:
-  chat_id: str
-  user_id: str
-  message: str
-  type: MessageType
-  id: str | None = None
+from src.llm.llm import generate, complete_chat
+from src.llm.prompt import build_prompt, build_chat_request
 
 async def create_message(message: Message):
   user_message_date = datetime.now().isoformat()
@@ -39,16 +26,16 @@ async def create_message(message: Message):
 
   context = question(message.message)
   summary = chat["old_history_summary"]
-  conversation = chat["recent_history"]
+  recent_messages = chat["recent_history"]
 
-  prompt = build_prompt(
+  chat_request = build_chat_request(
     question=message.message,
     context=context,
     summary=summary,
-    conversation=conversation,
+    recent_messages=recent_messages,
   )
 
-  response = generate(prompt)
+  response = complete_chat(chat_request)
 
   assistant_message_date = datetime.now().isoformat()
 
@@ -67,7 +54,7 @@ async def create_message(message: Message):
         "id": nanoid(),
         "chat_id": message.chat_id,
         "user_id": message.user_id,
-        "type": MessageType.assistant,
+        "type": MessageRole.assistant,
         "message": response,
         "created_at": assistant_message_date,
       },

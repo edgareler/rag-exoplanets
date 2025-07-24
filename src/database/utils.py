@@ -1,26 +1,5 @@
 import math
-from dataclasses import dataclass
-
-@dataclass
-class Range:
-  start: int
-  end: int
-
-@dataclass
-class DBResponse:
-  data: list[dict]
-  count: int
-
-@dataclass
-class DBMetadata:
-  page: int
-  total_pages: int
-  total_records: int
-
-@dataclass
-class EndpointResponse:
-  data: list[dict]
-  metadata: DBMetadata
+from src.database.types import Range, DBResponse, DBMetadata, EndpointResponse
 
 def page_to_range(page: int, page_size: int) -> Range:
   if page < 1:
