@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from src.chats.router import router as router_chats
 from src.messages.router import router as router_messages
 from src.llm.llm import load_model, warm_up, unload_model
@@ -40,10 +41,23 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(APIKeyMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
-  return {"success": True}
+  return JSONResponse(
+    content={"success": True},
+    headers={
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
+    },
+  )
 
 app.include_router(router_chats)
 app.include_router(router_messages)
