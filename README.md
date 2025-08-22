@@ -156,7 +156,12 @@ Why this pattern?
   - CPU inference is slower than GPU. Use GPU/compile with cuBLAS for speed.
   - Stop strings add overhead at each token; prefer rare or none.
 - **Model on CPU instead of GPU**
-  - Reinstall/compile `llama-cpp-python` with `CMAKE_ARGS="-DLLAMA_CUBLAS=on"` and set n_gpu_layers when loading.
+  - Reinstall/compile `llama-cpp-python` with `CMAKE_ARGS="-DLLAMA_CUBLAS=on"` and set n_gpu_layers when loading:
+    ```bash
+    pipenv shell
+    CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install llama-cpp-python \
+    --force-reinstall --no-binary :all:
+    ```
 
 ## Teaching tips (for workshop or tutorial)
 
